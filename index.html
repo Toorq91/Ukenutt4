@@ -1,141 +1,167 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <title>Wheel of Destiny!</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <style>
+        body {
+            background-color: #333;
+        }
+        .header {
+            padding: 40px;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .wheel {
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+        .center-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #fff;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+        .triangle {
+            width: 0; 
+            height: 0; 
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent; 
+            border-right: 30px solid white; 
+            position: absolute;
+            top: 50%;
+            right: -220%;
+            transform: translateY(-50%);
+        }
+        textarea {
+            background-color: rgba(20, 20, 20, 0.2);
+            caret-color: #fff;
+            resize: none;
+            color: #fff;
+        }
+        .inputArea {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="input-container">
-            <input type="text" id="nameInput" placeholder="Enter a name">
-            <button onclick="addName()">Add</button>
-        </div>
-        <div class="spinBtn">Spin</div>
-        <div class="wheel" id="wheel"></div>
+    <div class="header">
+        <h1>WINNER</h1>
+        <p id="winner">NONE</p>
     </div>
+    <div class="wheel">
+        <canvas id="canvas" width="500" height="500"></canvas>
+        <div class="center-circle" onclick="spin()">
+            <div class="triangle"></div>
+        </div>
+    </div>
+    <div class="inputArea">
+        <textarea rows="10" cols="30">Spin me!</textarea>
+    </div>
+
     <script>
-        let names = [];
-        let colors = ["#db7093", "#20b2aa", "#d63e92", "#daa520", "#ff340f", "#ff7f50", "#3cb371", "#4169e1"];
-
-    function addName() {
-        let input = document.getElementById("nameInput");
-        let name = input.value.trim();
-        if (name && names.length < 20) { // Limit to 20 names
-            names.push(name);
-            input.value = "";
-            updateWheel();
+        function toRad(deg) {
+            return deg * (Math.PI / 180.0);
         }
-    }
 
-    function updateWheel() {
-        let wheel = document.getElementById("wheel");
-        wheel.innerHTML = ""; // Clear previous wheel content
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = width / 2;
 
-        let totalSlices = names.length;
-        let sliceAngle = 360 / totalSlices; // Divide 360 degrees by the total number of slices
+        const fixedColors = [
+            { r: 240, g: 128, b: 128 },
+            { r: 0, g: 255, b: 255 },
+            { r: 255, g: 225, b: 170 },
+            { r: 0, g: 255, b: 127 },
+            { r: 153, g: 50, b: 204 },
+        ];
 
-        names.forEach((name, i) => {
-            let slice = document.createElement("div");
-            slice.className = "number";
-            slice.style.setProperty("--i", i + 1);
-            slice.style.setProperty("--clr", colors[i % colors.length]);
+        let items = [];
+        let step = 0;
+        let colors = [];
+        let currentDeg = 0;
+        let speed = 0;
+        let maxRotation = 0;
+        let pause = false;
 
-            // Handle special cases when there are 1, 2, or 3 names
-            if (totalSlices === 1) {
-                slice.style.transform = `rotate(0deg)`; // Rotate to start at the top
-                slice.style.width = "100%"; // Ensure the slice covers the entire wheel
-                slice.style.height = "100%"; // Same for height
-                slice.style.borderRadius = "50%"; // Make it a full circle
-                slice.style.clipPath = "none"; // No clipping for single slice
-            } else if (totalSlices === 2) {
-                slice.style.transform = `rotate(${i * sliceAngle}deg)`; // First slice will rotate 0°, second slice will rotate 180°
-                if (i === 0) {
-                    slice.style.width = "100%"; 
-                    slice.style.height = "50%"; 
-                    slice.style.position = "absolute";
-                    slice.style.top = "0"; 
-                    slice.style.transformOrigin = "center"; 
-                    slice.style.borderBottom = "none"; 
-                    slice.style.zIndex = 1; 
-                }
-                if (i === 1) {
-                    slice.style.width = "100%"; 
-                    slice.style.height = "50%"; 
-                    slice.style.position = "absolute";
-                    slice.style.top = "50%"; 
-                    slice.style.transformOrigin = "center"; 
-                    slice.style.borderTopLeftRadius = "100%"; 
-                    slice.style.borderTopRightRadius = "100%"; 
-                    slice.style.zIndex = 1; 
-                }
-            } else if (totalSlices === 3) {
-                // For 3 slices, create a pie slice shape
-                slice.style.transform = `rotate(${i * sliceAngle}deg)`; // 3 slices, each takes 120° turn
-                slice.style.width = "50%"; 
-                slice.style.height = "50%"; 
-                slice.style.position = "absolute";
-                slice.style.top = "0";
-                slice.style.left = "0";
-                slice.style.transformOrigin = "100% 100%"; // Center the transform at the outer corner
-                slice.style.zIndex = 1;
-                slice.style.background = colors[i % colors.length]; // Apply color
-            } else {
-                slice.style.transform = `rotate(${i * sliceAngle}deg)`; // Rotate each slice by calculated angle
+        function getFixedColor(index) {
+            return fixedColors[index % fixedColors.length];
+        }
+
+        function createWheel() {
+            items = document.querySelector("textarea").value.split("\n").filter(item => item.trim() !== "");
+            step = 360 / items.length;
+            colors = items.map((_, i) => getFixedColor(i));
+            draw();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let startDeg = currentDeg;
+
+            for (let i = 0; i < items.length; i++) {
+                let endDeg = startDeg + step;
+                let color = colors[i];
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, toRad(startDeg), toRad(endDeg));
+                ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+                ctx.fill();
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(toRad((startDeg + endDeg) / 2));
+                ctx.textAlign = "center";
+                ctx.fillStyle = "#333";
+                ctx.font = "bold 24px serif";
+                ctx.fillText(items[i], 130, 10);
+                ctx.restore();
+                startDeg = endDeg;
             }
+        }
 
-            // Create the content of the slice (name)
-            let nameText = document.createElement("span");
-            nameText.innerHTML = name;
+        function easeOutSine(x) {
+            return Math.sin((x * Math.PI) / 2);
+        }
 
-            // For a single slice, center the text in the middle of the entire circle
-            if (totalSlices === 1) {
-                nameText.style.position = "absolute";
-                nameText.style.top = "calc(50% - 100px)"; // Center the text vertically
-                nameText.style.left = "50%"; 
-                nameText.style.transform = "translate(-50%, -50%)"; // Final centering
-                nameText.style.fontSize = "1.5em"; 
-                nameText.style.color = "#fff"; 
-                nameText.style.textShadow = "3px 5px 2px rgba(0,0,0,0.5)";
+        function spin() {
+            if (speed !== 0) return;
+            maxRotation = 360 * 6 + Math.random() * 360;
+            speed = 20;
+            pause = false;
+            animate();
+        }
+
+        function animate() {
+            if (pause) return;
+            speed *= 0.98;
+            if (speed < 0.1) {
+                speed = 0;
+                pause = true;
+                determineWinner();
             }
+            currentDeg += speed;
+            draw();
+            requestAnimationFrame(animate);
+        }
 
-            // For 3 slices, center the name text inside each slice
-            if (totalSlices === 3) {
-                slice.style.position = "absolute";
-                slice.style.width = "100%"; 
-                slice.style.height = "100%"; 
-                slice.style.clipPath = "polygon(50% 50%, 38% 0, 0 0, 0 100%)"; // Proper 120° slice shape
-                slice.style.background = colors[i % colors.length];
-                slice.style.transform = `rotate(${i * sliceAngle}deg)`; 
-                slice.style.transformOrigin = "50% 50%"; 
+        function determineWinner() {
+            let normalizedDeg = (currentDeg % 360 + 360) % 360;
+            let index = Math.floor((360 - normalizedDeg) / step) % items.length;
+            document.getElementById("winner").innerText = items[index];
+        }
 
-                // Position name inside the slice
-                nameText.style.position = "absolute";
-                nameText.style.top = "25%";  // Moves text up slightly
-                nameText.style.left = "50%"; 
-                nameText.style.transform = "translate(-50%, -50%) rotate(" + (-i * sliceAngle) + "deg)"; 
-                nameText.style.fontSize = "1.2em"; 
-                nameText.style.fontWeight = "bold";
-                nameText.style.color = "#fff"; 
-                nameText.style.textShadow = "3px 5px 2px rgba(0,0,0,0.5)";
-            }
-
-
-            slice.appendChild(nameText); // Append the text to the slice
-            wheel.appendChild(slice); // Append the slice to the wheel
-        });
-    }
-
-    // Spinning functionality
-    let spinBtn = document.querySelector('.spinBtn');
-    let value = Math.ceil(Math.random() * 3600);
-
-    spinBtn.onclick = function() {
-        document.getElementById("wheel").style.transform = "rotate(" + value + "deg)";
-        value += Math.ceil(Math.random() * 3600);
-    };
-
-
+        document.querySelector("textarea").addEventListener("input", createWheel);
+        createWheel();
     </script>
 </body>
 </html>
-
