@@ -70,15 +70,7 @@
         
     </div>
     <div class="inputArea" onchange="createWheel()">
-        <textarea rows="20" cols="30" >cat
-dog
-cow
-duck
-sheep
-goat
-bird
-neko
-chicken</textarea>
+        <textarea rows="20" cols="30" >1</textarea>
     </div>
 
     <script>
@@ -213,22 +205,24 @@ chicken</textarea>
         
         function spin(){
             if(speed != 0){
-                return
+                return;
             }
 
             maxRotation = 0;
-            currentDeg = 0
-            createWheel()
+            currentDeg = 0;
+            createWheel();
             draw();
 
+            // Pick a random item
+            let randomItem = items[Math.floor(Math.random() * items.length)];
+
+            // Set rotation to stop at the randomly chosen item
+            maxRotation = (360 * 6) - itemDegs[randomItem].endDeg + 10;
             
-            maxRotation = (360 * 6) - itemDegs['cat'].endDeg + 10
-            itemDegs = {}
-            console.log("max",maxRotation)
-            console.log(itemDegs);
-            pause = false
+            pause = false;
             window.requestAnimationFrame(animate);
         }
+
 
     </script>
 </body>
