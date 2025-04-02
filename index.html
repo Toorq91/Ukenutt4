@@ -135,8 +135,8 @@
 
         function spin() {
             if (speed !== 0) return;
-            maxRotation = 360 * 6 + Math.random() * 360;
-            speed = 20;
+            maxRotation = 360 * 6 + Math.floor(Math.random() * 10000);
+            speed = 20 + Math.random() * 5;
             pause = false;
             animate();
         }
