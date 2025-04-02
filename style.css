@@ -1,4 +1,4 @@
-@import url('https//fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800,900&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800,900&display=swap');
 *
 {
     margin: 0;
@@ -13,6 +13,7 @@ body
     align-items: center;
     min-height: 100vh;
     background: #333;
+    flex-direction: column; /* Ensure items are stacked vertically */
 }
 .container
 {
@@ -22,7 +23,40 @@ body
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
+
+.input-container {
+    position: absolute;
+    top: -150px; /* Adjust the distance from the top */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10; /* Ensure it appears above the wheel */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.input-container input {
+    padding: 10px;
+    font-size: 1em;
+    width: 200px;
+    border: none;
+    border-radius: 5px;
+}
+
+.input-container button {
+    padding: 10px 20px;
+    margin-left: 10px;
+    font-size: 1em;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
 .container .spinBtn
 {
     position: absolute;
@@ -30,7 +64,7 @@ body
     height: 80px;
     background: #fff;
     border-radius: 50%;
-    z-index: 10;
+    z-index: 5; /* Behind the input but above the wheel */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -42,32 +76,6 @@ body
     cursor: pointer;
     user-select: none;
 }
-.container .spinBtn::before {
-    content: '';
-    position: absolute;
-    left: -22px; 
-    top: 50%;
-    transform: translateY(-50%) rotate(-90deg); 
-    width: 20px;
-    height: 30px;
-    background: #fff;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    z-index: 2; 
-}
-
-.container .spinBtn::after {
-    content: '';
-    position: absolute;
-    left: -30px; 
-    top: 50%;
-    transform: translateY(-50%) rotate(-90deg); 
-    width: 24px; 
-    height: 34px;
-    background: rgba(0, 0, 0, 0.75); 
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    z-index: 1; 
-}
-
 
 .container .wheel
 {
@@ -84,32 +92,26 @@ body
     0 0 0 18px #111;
     transition: transform 5s ease-in-out;
 }
-.container .wheel .number
-{
+
+.container .wheel .number {
     position: absolute;
-    width: 50%;
-    height: 50%;
+    width: 50%; /* Default for multiple names */
+    height: 50%; /* Default for multiple names */
     background: var(--clr);
     transform-origin: bottom right;
-    transform: rotate(calc(45deg * var(--i)));
-    clip-path: polygon(0 0, 58% 0, 100% 100%, 0 58%);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
     display: flex;
     justify-content: center;
     align-items: center;
     user-select: none;
     cursor: pointer;
 }
-.container .wheel .number span
-{
+
+.container .wheel .number span {
     position: relative;
-    transform: rotate(45deg);
-    font-size: 2em;
+    transform: rotate(45deg); /* Adjust rotation of text inside the slice */
+    font-size: 1.2em;
     font-weight: 700;
     color: #fff;
     text-shadow: 3px 5px 2px rgba(0,0,0,0.5);
-}
-.container .wheel .number span::after
-{
-    content: '$';
-    position: absolute;
 }
