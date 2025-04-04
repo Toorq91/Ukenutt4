@@ -144,6 +144,11 @@ Rolf
             return fixedColors[index % fixedColors.length];
         }
 
+        /* 
+           * createWheel-funksjonen oppretter hjulet basert på teksten i textareaen. 
+           * Den deler teksten inn i linjer og fjerner tomme linjer, og beregner deretter vinkelen for hvert segment.
+           * Fargene til hvert segment hentes fra fixedColors-arrayen.
+        */
         function createWheel() {
             items = document.querySelector("textarea").value.split("\n").filter(item => item.trim() !== "");
             step = 360 / items.length;
@@ -151,6 +156,11 @@ Rolf
             draw();
         }
 
+        /* 
+           * Tegner hjulet ved å bruke canvas API. 
+           * Hvert segment tegnes med en farge fra colors-arrayen, og teksten plasseres i midten av hvert segment.
+           * Hjulet roteres basert på currentDeg-verdien.
+        */
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             let startDeg = currentDeg;
@@ -179,6 +189,11 @@ Rolf
             return Math.sin((x * Math.PI) / 2);
         }
 
+        /* 
+           * Spin-funksjonen håndterer rotasjonen av hjulet. 
+           * Den beregner hvor mye hjulet skal rotere, og bruker requestAnimationFrame for å animere rotasjonen.
+           * Når rotasjonen er fullført, kalles determineWinner-funksjonen for å bestemme vinneren.
+        */
         function spin() {
             if (speed !== 0 || pause) return;
 
@@ -209,7 +224,11 @@ Rolf
             requestAnimationFrame(animateSpin);
         }
 
-
+        /* 
+           * determineWinner-funksjonen beregner hvilken seksjon hjulet har stoppet på, 
+           * og viser vinneren i headeren. 
+           * Den bruker confetti-biblioteket for å lage en festlig effekt når vinneren er bestemt.
+        */
         function determineWinner() {
             let normalizedDeg = (currentDeg % 360 + 360) % 360;
             let index = Math.floor((360 - normalizedDeg) / step) % items.length;
