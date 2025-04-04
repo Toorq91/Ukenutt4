@@ -48,11 +48,6 @@
         }
 
         .triangle {
-            width: 0;
-            height: 0;
-            border-top: 10px solid transparent;
-            border-bottom: 10px solid transparent;
-            border-right: 30px solid red;
             position: absolute;
             top: 50%;
             right: -220%;
@@ -82,7 +77,9 @@
     <div class="wheel">
         <canvas id="canvas" width="500" height="500"></canvas>
         <div class="center-circle" onclick="spin()"> Spin!
-            <div class="triangle"></div>
+            <svg class="triangle" width="40" height="30" viewBox="0 0 30 20">
+                <polygon points="0,10 30,0 30,20" fill="red" stroke="black" stroke-width="3" />
+            </svg>
         </div>
     </div>
     <div class="inputArea">
