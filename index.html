@@ -168,25 +168,35 @@
         }
 
         function spin() {
-            if (speed !== 0) return;
-            maxRotation = 360 * 6 + Math.floor(Math.random() * 10000);
-            speed = 20 + Math.random() * 5;
-            pause = false;
-            animate();
+            if (speed !== 0 || pause) return;
+
+            const fullRotations = 5 + Math.random() * 5;
+            const randomAngle = Math.random() * 360;
+            const totalRotation = 360 * fullRotations + randomAngle;
+            const startRotation = currentDeg;
+            const endRotation = currentDeg + totalRotation;
+
+            const duration = 3000;
+            const startTime = performance.now();
+
+            function animateSpin(time) {
+                const elapsed = time - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easedProgress = easeOutSine(progress);
+                currentDeg = startRotation + (endRotation - startRotation) * easedProgress;
+
+                draw();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateSpin);
+                } else {
+                    determineWinner();
+                }
+            }
+
+            requestAnimationFrame(animateSpin);
         }
 
-        function animate() {
-            if (pause) return;
-            speed *= 0.98;
-            if (speed < 0.1) {
-                speed = 0;
-                pause = true;
-                determineWinner();
-            }
-            currentDeg += speed;
-            draw();
-            requestAnimationFrame(animate);
-        }
 
         function determineWinner() {
             let normalizedDeg = (currentDeg % 360 + 360) % 360;
